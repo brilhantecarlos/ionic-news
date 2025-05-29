@@ -4,22 +4,66 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>{{ folder | titlecase }}</ion-title>
+    <ion-chip slot="end" [color]="isOnline ? 'success' : 'danger'">
+      <ion-icon [name]="isOnline ? 'cloud-done' : 'cloud-offline'"></ion-icon>
+      <ion-label><strong>{{ isOnline ? 'ONLINE' : 'OFFLINE' }}</strong></ion-label>
+    </ion-chip>
+    <!-- Botão de apagar cache removido para melhorar a experiência do usuário -->
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Puxe para atualizar"
+      refreshingSpinner="circles"
+      refreshingText="Carregando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">{{ folder | titlecase }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <ion-spinner *ngIf="!newsList"></ion-spinner>
+  <!-- Mensagem de Status -->
+  <div *ngIf="statusMessage" class="status-message">
+    <ion-item [color]="statusColor">
+      <ion-icon slot="start" [name]="statusIcon"></ion-icon>
+      <ion-label><strong>{{ statusMessage }}</strong></ion-label>
+    </ion-item>
   </div>
-  <div *ngIf="newsList">
-    <div *ngFor="let news of newsList">
-      <app-news-card [news]="news"></app-news-card>
-    </div>
+
+  <!-- Loading spinner -->
+  <div id="container" *ngIf="isLoading">
+    <ion-spinner></ion-spinner>
+  </div>
+  
+  <!-- Lista de notícias -->
+  <ion-list *ngIf="newsList && !isLoading">
+    <ion-item-sliding *ngFor="let news of newsList">
+      <ion-item>
+        <app-news-card [news]="news"></app-news-card>
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option (click)="toggleFavorite(news)" [color]="isFavorite(news) ? 'danger' : 'primary'">
+          <ion-icon [name]="isFavorite(news) ? 'heart' : 'heart-outline'"></ion-icon>
+          {{ isFavorite(news) ? 'Remover' : 'Favoritar' }}
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- Mensagem quando não há notícias -->
+  <div *ngIf="!isLoading && (!newsList || newsList.length === 0)" class="empty-state">
+    <ion-text color="medium">
+      <h4>Sem notícias disponíveis</h4>
+      <p>Verifique sua conexão ou tente outra categoria</p>
+    </ion-text>
+    <ion-button (click)="loadNews()" expand="block" fill="outline">
+      Tentar novamente
+    </ion-button>
   </div>
 </ion-content>

@@ -12,6 +12,7 @@ export interface ArticlesEntity {
   urlToImage?: string | null;
   publishedAt: string;
   content?: string | null;
+  category?: string; 
 }
 export interface Source {
   id?: string | null;
