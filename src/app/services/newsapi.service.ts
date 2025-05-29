@@ -86,7 +86,6 @@ export class NewsapiService {
       tap(response => {
         if (response && response.status === 'ok' && response.articles) {
           console.log('Salvando imediatamente notícias no cache para', category);
-          // Salvamos imediatamente no cache com tempo de expiração de 30 minutos
           this.storageService.cacheNews(response.articles, category, 30).then(success => {
             console.log('Notícias salvas em cache com sucesso:', success);
           });

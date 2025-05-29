@@ -129,7 +129,6 @@ export class StorageService {
       const expirationTime = now + (expirationMinutes * 60 * 1000);
       
       if (this.isWeb) {
-        // Para ambiente web, salvamos em memória
         const newsWithMeta = news.map(item => ({
           ...item,
           category,
@@ -140,7 +139,6 @@ export class StorageService {
         this.memoryCache.news.set(category, newsWithMeta);
         console.log(`${news.length} notícias cacheadas em memória para ${category}`);
         
-        // Salvar também no localStorage para persistência
         try {
           localStorage.setItem(`news_${category}`, JSON.stringify({
             timestamp: now,
@@ -155,7 +153,6 @@ export class StorageService {
         return true;
       }
       
-      // Para ambiente nativo, usamos SQLite
       console.log('Removendo notícias expiradas antes de salvar novo cache');
       await this.removeExpiredNews(category);
       
@@ -210,10 +207,8 @@ export class StorageService {
       console.log(`Buscando notícias em cache para categoria: ${category}`);
       
       if (this.isWeb) {
-        // Primeiro tenta obter do cache em memória
         let cachedNews = this.memoryCache.news.get(category) || [];
         
-        // Se não tiver em memória, tenta recuperar do localStorage
         if (cachedNews.length === 0) {
           try {
             const storedData = localStorage.getItem(`news_${category}`);
@@ -221,7 +216,6 @@ export class StorageService {
               const parsed = JSON.parse(storedData);
               if (parsed && parsed.data && parsed.expiration > now) {
                 cachedNews = parsed.data;
-                // Restaura para o cache em memória
                 this.memoryCache.news.set(category, cachedNews);
                 console.log(`Recuperado ${cachedNews.length} notícias do localStorage para ${category}`);
               } else {
@@ -233,14 +227,12 @@ export class StorageService {
           }
         }
         
-        // Filtra apenas notícias válidas (não expiradas)
         const validNews = cachedNews.filter(item => item.expiration > now);
         
         console.log(`${validNews.length} notícias válidas em cache para ${category}`);
         return validNews;
       }
       
-      // Para ambiente nativo, usa SQLite
       console.log('Buscando notícias no SQLite para categoria:', category);
       await this.removeExpiredNews(category);
       

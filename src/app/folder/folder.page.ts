@@ -35,15 +35,12 @@ export class FolderPage implements OnInit {
   async ngOnInit() {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
     
-    // Inicializar o status online combinando navigator.onLine e Capacitor Network
     await this.checkNetworkStatus();
     
-    // Configurar ouvinte para mudanças no status da rede via Capacitor
     Network.addListener('networkStatusChange', (status: { connected: boolean }) => {
       this.handleNetworkStatusChange(status.connected);
     });
     
-    // Adicionar listeners para eventos online/offline do navegador para melhor suporte na web
     window.addEventListener('online', () => {
       console.log('Browser detectou online');
       this.handleNetworkStatusChange(true);
@@ -54,28 +51,21 @@ export class FolderPage implements OnInit {
       this.handleNetworkStatusChange(false);
     });
     
-    // Carregar favoritos
     await this.loadFavoritesList();
     
-    // Carregar notícias
     this.loadNews();
   }
   
-  // Verifica o status da rede usando Capacitor Network e navigator.onLine
   private async checkNetworkStatus(): Promise<boolean> {
     try {
-      // Usar Promise.all para paralelizar requisições e melhorar performance
       const [capacitorStatus] = await Promise.all([
         Network.getStatus()
       ]);
       
-      // Verificar navigator.onLine (síncrono e rápido)
       const browserOnline = navigator.onLine;
       
-      // Combinar os dois status com curto-circuito para evitar cálculos desnecessários
       const isCurrentlyOnline = browserOnline && capacitorStatus.connected;
       
-      // Atualizar o status apenas se for diferente do atual
       if (this.isOnline !== isCurrentlyOnline) {
         this.handleNetworkStatusChange(isCurrentlyOnline);
       } else {
@@ -90,20 +80,17 @@ export class FolderPage implements OnInit {
     }
   }
   
-  // Gerencia mudanças no status da rede
   private handleNetworkStatusChange(online: boolean): void {
     const wasOnline = this.isOnline;
     this.isOnline = online;
     
     if (wasOnline && !online) {
-      // Mudou para offline
       this.isUsingCache = true;
       this.updateStatusMessage('offline');
       console.log('Mudou para offline');
       this.showToast('Você está offline. Mostrando notícias do cache.');
       this.loadCachedNews();
     } else if (!wasOnline && online) {
-      // Mudou para online
       this.updateStatusMessage('online');
       console.log('Mudou para online');
       this.showToast('Você está online. Carregando notícias atualizadas.');
@@ -111,13 +98,11 @@ export class FolderPage implements OnInit {
     }
   }
 
-  // Propriedades para otimização de requisições
   private newsRequestInProgress = false;
   private lastRequestTime = 0;
   private readonly REQUEST_COOLDOWN = 5000; // 5 segundos entre requisições
 
   loadNews() {
-    // Evitar chamadas duplicadas em curto período
     const now = Date.now();
     if (this.newsRequestInProgress || (now - this.lastRequestTime < this.REQUEST_COOLDOWN)) {
       console.log('Ignorando requisição duplicada ou muito próxima');
@@ -135,7 +120,6 @@ export class FolderPage implements OnInit {
       console.log('Usando categoria padrão:', this.folder);
     }
 
-    // Verificar status da rede - usa o valor já verificado pelo checkNetworkStatus para reduzir chamadas
     if (!this.isOnline) {
       console.log('Offline: tentando carregar do cache');
       this.updateStatusMessage('offline');
@@ -146,7 +130,6 @@ export class FolderPage implements OnInit {
     
     console.log('Online: carregando da API para categoria:', this.folder);
     
-    // Se estiver online, carregar da API
     this.newsApiService
       .getTopCountryHeadlines('us', this.folder)
       .pipe(
@@ -172,7 +155,6 @@ export class FolderPage implements OnInit {
             console.log('Notícias recebidas da API:', news.length);
             this.newsList = news;
             
-            // Salvar no cache de forma assíncrona para não bloquear a UI
             setTimeout(() => {
               this.storageService.cacheNews(news, this.folder).then(success => {
                 console.log('Notícias salvas no cache diretamente:', success);
@@ -194,12 +176,10 @@ export class FolderPage implements OnInit {
       });
   }
 
-  // Cache de resultados para evitar buscas repetidas
   private cachedResultsMap: Map<string, ArticlesEntity[]> = new Map<string, ArticlesEntity[]>();
   private cacheTimestamps: Map<string, number> = new Map<string, number>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutos em milissegundos
 
-  // Carregar notícias do cache com otimizações
   private async loadCachedNews() {
     if (!this.folder) return;
     
@@ -209,7 +189,6 @@ export class FolderPage implements OnInit {
       const cacheKey = `cache_${this.folder}`;
       const cacheTimestamp = this.cacheTimestamps.get(cacheKey) || 0;
       
-      // Verificar se temos um cache em memória válido (menos de 5 minutos)
       if (this.cachedResultsMap.has(cacheKey) && (now - cacheTimestamp < this.CACHE_TTL)) {
         console.log('Usando cache em memória para', this.folder);
         const memCache = this.cachedResultsMap.get(cacheKey);
@@ -225,11 +204,9 @@ export class FolderPage implements OnInit {
       
       console.log('Buscando notícias do cache de armazenamento para categoria:', this.folder);
       
-      // Se não tiver em memória, buscar do storage
       const cachedNews = await this.storageService.getCachedNews(this.folder);
       
       if (cachedNews && cachedNews.length > 0) {
-        // Armazenar no cache em memória para acesso mais rápido depois
         this.cachedResultsMap.set(cacheKey, cachedNews);
         this.cacheTimestamps.set(cacheKey, now);
         
@@ -254,7 +231,6 @@ export class FolderPage implements OnInit {
     }
   }
 
-  // Atualizar notícias via pull-to-refresh
   doRefresh(event: CustomEvent<RefresherEventDetail>) {
     if (!this.isOnline) {
       this.showToast('Você está offline. Não é possível atualizar.');
@@ -284,7 +260,6 @@ export class FolderPage implements OnInit {
       .subscribe((news) => {
         if (news) {
           this.newsList = news;
-          // Atualizar o cache com as novas notícias
           this.storageService.cacheNews(news, this.folder).catch(err => {
             console.error('Erro ao atualizar cache após refresh:', err);
           });
@@ -292,7 +267,6 @@ export class FolderPage implements OnInit {
       });
   }
 
-  // Limpar o cache
   async clearCache() {
     const result = await this.storageService.clearCache();
     if (result) {
@@ -305,12 +279,10 @@ export class FolderPage implements OnInit {
     }
   }
 
-  // Verificar se uma notícia é favorita
   isFavorite(news: ArticlesEntity): boolean {
     return this.favoriteIds.has(news.url);
   }
 
-  // Adicionar/remover dos favoritos
   async toggleFavorite(news: ArticlesEntity) {
     try {
       const isCurrentlyFavorite = this.isFavorite(news);
@@ -335,7 +307,6 @@ export class FolderPage implements OnInit {
     }
   }
 
-  // Carregar lista de favoritos
   private async loadFavoritesList() {
     try {
       const favorites = await this.storageService.getFavorites();
@@ -345,7 +316,6 @@ export class FolderPage implements OnInit {
     }
   }
 
-  // Mostrar mensagem toast
   private async showToast(message: string) {
     const toast = await this.toastController.create({
       message,
@@ -355,7 +325,6 @@ export class FolderPage implements OnInit {
     await toast.present();
   }
 
-  // Atualizar mensagem de status
   private updateStatusMessage(status: 'loading' | 'online' | 'offline' | 'cache' | 'error' | 'refresh', errorMessage?: string) {
     switch (status) {
       case 'loading':
@@ -371,12 +340,12 @@ export class FolderPage implements OnInit {
       case 'offline':
         if (this.statusMessage !== undefined) this.statusMessage = 'Você está offline. Mostrando dados em cache.';
         if (this.statusIcon !== undefined) this.statusIcon = 'cloud-offline-outline';
-        if (this.statusColor !== undefined) this.statusColor = 'danger'; // Mudando para vermelho (danger)
+        if (this.statusColor !== undefined) this.statusColor = 'danger'; 
         break;
       case 'cache':
         if (this.statusMessage !== undefined) this.statusMessage = 'Dados carregados do cache local';
         if (this.statusIcon !== undefined) this.statusIcon = 'save-outline';
-        if (this.statusColor !== undefined) this.statusColor = 'danger'; // Mudando para vermelho (danger)
+        if (this.statusColor !== undefined) this.statusColor = 'danger'; 
         break;
       case 'refresh':
         if (this.statusMessage !== undefined) this.statusMessage = 'Notícias atualizadas com sucesso';
@@ -390,7 +359,6 @@ export class FolderPage implements OnInit {
         break;
     }
     
-    // Limpar mensagem de status após 5 segundos para mensagens não-permanentes
     if (status !== 'offline' && status !== 'error' && status !== 'cache') {
       setTimeout(() => {
         if (this.statusMessage) {
