@@ -7,10 +7,19 @@
 <ion-content>
   <ion-title size="large">Bem vindo(a)</ion-title>
 
-  <ion-input type="email" placeholder="Digite seu email" required></ion-input>
-
-  <ion-input type="password" placeholder="Digite sua senha" required>
-  </ion-input>
+  <div class="form-container">
+    <ion-input type="email" placeholder="Digite seu email" required></ion-input>
+    <ion-input
+      type="password"
+      placeholder="Digite sua senha"
+      required
+    ></ion-input>
+  </div>
 
   <ion-button expand="full" color="primary">Entrar</ion-button>
+
+  <ion-text class="register-link">
+    Ainda não tem conta?
+    <a routerLink="/cadastro">Cadastre-se</a>
+  </ion-text>
 </ion-content>

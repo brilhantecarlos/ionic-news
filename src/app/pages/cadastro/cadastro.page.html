@@ -9,17 +9,22 @@
 
   <ion-list>
     <ion-item>
-      <ion-input type="text" placeholder="Nome completo" required></ion-input>
+      <ion-input type="text" placeholder="Nome completo" [(ngModel)]="nome" required></ion-input>
     </ion-item>
     <ion-item>
-      <ion-input type="email" placeholder="Email" required></ion-input>
+      <ion-input type="email" placeholder="Email" [(ngModel)]="email" required></ion-input>
     </ion-item>
     <ion-item>
-      <ion-input type="password" placeholder="Senha" required></ion-input>
+      <ion-input type="password" placeholder="Senha" [(ngModel)]="senha" required></ion-input>
     </ion-item>
     <ion-item>
-      <ion-input type="password" placeholder="Confirme a senha" required></ion-input>
+      <ion-input type="password" placeholder="Confirme a senha" [(ngModel)]="confirmarSenha" required></ion-input>
     </ion-item>
-    <ion-button expand="full" color="primary" type="submit">Cadastrar</ion-button>
+
+    <ion-button expand="full" color="primary" (click)="cadastrar()">Cadastrar</ion-button>
+
+    <div *ngIf="mensagemErro" style="color: red; margin-top: 12px;">
+      {{ mensagemErro }}
+    </div>
   </ion-list>
 </ion-content>

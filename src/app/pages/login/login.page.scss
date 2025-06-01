@@ -28,6 +28,7 @@ ion-input {
   font-size: 1rem;
   border: 1px solid #e0e0e0;
   transition: border-color 0.2s;
+  
 }
 
 ion-input:focus-within {
@@ -53,3 +54,18 @@ ion-title {
   font-weight: 700;
   letter-spacing: 1px;
 }
+
+.register-link {
+  margin-top: 20px;
+  font-size: 0.95rem;
+  color: #555;
+  text-align: center;
+}
+
+.register-link a {
+  color: #3880ff;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
