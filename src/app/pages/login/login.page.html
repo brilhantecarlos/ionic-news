@@ -8,15 +8,27 @@
   <ion-title size="large">Bem vindo(a)</ion-title>
 
   <div class="form-container">
-    <ion-input type="email" placeholder="Digite seu email" required></ion-input>
+    <ion-input
+      type="email"
+      placeholder="Digite seu email"
+      [(ngModel)]="email"
+      required
+    ></ion-input>
     <ion-input
       type="password"
       placeholder="Digite sua senha"
+      [(ngModel)]="senha"
       required
     ></ion-input>
   </div>
 
-  <ion-button expand="full" color="primary">Entrar</ion-button>
+  <ion-button expand="full" color="primary" (click)="login()"
+    >Entrar</ion-button
+  >
+
+  <ion-text class="register-link" color="danger" *ngIf="mensagemErro">
+    {{ mensagemErro }}
+  </ion-text>
 
   <ion-text class="register-link">
     Ainda não tem conta?
