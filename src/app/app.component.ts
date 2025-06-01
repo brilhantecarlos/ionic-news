@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -7,6 +9,7 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   public appPages = [
+    { title: 'Login', url: '/login', icon: 'log-in' },
     { title: 'Geral', url: '/general', icon: 'newspaper' },
     { title: 'Negócios', url: '/business', icon: 'business' },
     { title: 'Esportes', url: '/sports', icon: 'football' },
@@ -16,5 +19,6 @@ export class AppComponent {
     { title: 'Ciência', url: '/science', icon: 'rocket' },
   ];
   
-  constructor() {}
+  constructor(public router: Router) {}
+  
 }
