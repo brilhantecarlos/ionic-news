@@ -9,8 +9,6 @@ import { Router } from '@angular/router';
 })
 export class AppComponent {
   public appPages = [
-    { title: 'Login', url: '/login', icon: 'log-in' },
-    { title: 'Cadastro', url: '/cadastro', icon: 'person-add' },
     { title: 'Geral', url: '/general', icon: 'newspaper' },
     { title: 'Negócios', url: '/business', icon: 'business' },
     { title: 'Esportes', url: '/sports', icon: 'football' },

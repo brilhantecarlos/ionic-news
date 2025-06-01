@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NewsapiService } from '../services/newsapi.service';
 import { StorageService } from '../services/storage.service';
 import { ArticlesEntity, NewsResponse } from '../interfaces/news-response';
@@ -7,6 +7,8 @@ import { map, catchError, finalize } from 'rxjs/operators';
 import { ToastController, RefresherEventDetail } from '@ionic/angular';
 import { of } from 'rxjs';
 import { Network } from '@capacitor/network';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 
 @Component({
   selector: 'app-folder',
@@ -29,49 +31,51 @@ export class FolderPage implements OnInit {
   constructor(
     private newsApiService: NewsapiService,
     private storageService: StorageService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private router: Router
   ) {}
 
   async ngOnInit() {
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;
-    
+
     await this.checkNetworkStatus();
-    
-    Network.addListener('networkStatusChange', (status: { connected: boolean }) => {
-      this.handleNetworkStatusChange(status.connected);
-    });
-    
+
+    Network.addListener(
+      'networkStatusChange',
+      (status: { connected: boolean }) => {
+        this.handleNetworkStatusChange(status.connected);
+      }
+    );
+
     window.addEventListener('online', () => {
       console.log('Browser detectou online');
       this.handleNetworkStatusChange(true);
     });
-    
+
     window.addEventListener('offline', () => {
       console.log('Browser detectou offline');
       this.handleNetworkStatusChange(false);
     });
-    
+
     await this.loadFavoritesList();
-    
+
     this.loadNews();
   }
-  
+
   private async checkNetworkStatus(): Promise<boolean> {
     try {
-      const [capacitorStatus] = await Promise.all([
-        Network.getStatus()
-      ]);
-      
+      const [capacitorStatus] = await Promise.all([Network.getStatus()]);
+
       const browserOnline = navigator.onLine;
-      
+
       const isCurrentlyOnline = browserOnline && capacitorStatus.connected;
-      
+
       if (this.isOnline !== isCurrentlyOnline) {
         this.handleNetworkStatusChange(isCurrentlyOnline);
       } else {
         this.isOnline = isCurrentlyOnline;
       }
-      
+
       return isCurrentlyOnline;
     } catch (error) {
       const fallbackStatus = navigator.onLine;
@@ -79,11 +83,11 @@ export class FolderPage implements OnInit {
       return fallbackStatus;
     }
   }
-  
+
   private handleNetworkStatusChange(online: boolean): void {
     const wasOnline = this.isOnline;
     this.isOnline = online;
-    
+
     if (wasOnline && !online) {
       this.isUsingCache = true;
       this.updateStatusMessage('offline');
@@ -104,18 +108,25 @@ export class FolderPage implements OnInit {
 
   loadNews() {
     const now = Date.now();
-    if (this.newsRequestInProgress || (now - this.lastRequestTime < this.REQUEST_COOLDOWN)) {
+    if (
+      this.newsRequestInProgress ||
+      now - this.lastRequestTime < this.REQUEST_COOLDOWN
+    ) {
       console.log('Ignorando requisição duplicada ou muito próxima');
       return;
     }
-    
+
     this.isLoading = true;
     this.newsList = null;
     this.updateStatusMessage('loading');
     this.newsRequestInProgress = true;
     this.lastRequestTime = now;
 
-    if (this.folder === undefined || this.folder === null || this.folder === '') {
+    if (
+      this.folder === undefined ||
+      this.folder === null ||
+      this.folder === ''
+    ) {
       this.folder = 'general';
       console.log('Usando categoria padrão:', this.folder);
     }
@@ -127,9 +138,9 @@ export class FolderPage implements OnInit {
       this.newsRequestInProgress = false;
       return;
     }
-    
+
     console.log('Online: carregando da API para categoria:', this.folder);
-    
+
     this.newsApiService
       .getTopCountryHeadlines('us', this.folder)
       .pipe(
@@ -154,13 +165,16 @@ export class FolderPage implements OnInit {
           if (news && news.length > 0) {
             console.log('Notícias recebidas da API:', news.length);
             this.newsList = news;
-            
+
             setTimeout(() => {
-              this.storageService.cacheNews(news, this.folder).then(success => {
-                console.log('Notícias salvas no cache diretamente:', success);
-              }).catch(err => {
-                console.error('Erro ao salvar no cache:', err);
-              });
+              this.storageService
+                .cacheNews(news, this.folder)
+                .then((success) => {
+                  console.log('Notícias salvas no cache diretamente:', success);
+                })
+                .catch((err) => {
+                  console.error('Erro ao salvar no cache:', err);
+                });
             }, 0);
           } else {
             console.log('Nenhuma notícia recebida da API');
@@ -172,24 +186,30 @@ export class FolderPage implements OnInit {
           this.isLoading = false;
           this.updateStatusMessage('error', 'Erro ao carregar notícias');
           this.loadCachedNews(); // Tentar carregar do cache em caso de erro
-        }
+        },
       });
   }
 
-  private cachedResultsMap: Map<string, ArticlesEntity[]> = new Map<string, ArticlesEntity[]>();
+  private cachedResultsMap: Map<string, ArticlesEntity[]> = new Map<
+    string,
+    ArticlesEntity[]
+  >();
   private cacheTimestamps: Map<string, number> = new Map<string, number>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutos em milissegundos
 
   private async loadCachedNews() {
     if (!this.folder) return;
-    
+
     try {
       this.isLoading = true;
       const now = Date.now();
       const cacheKey = `cache_${this.folder}`;
       const cacheTimestamp = this.cacheTimestamps.get(cacheKey) || 0;
-      
-      if (this.cachedResultsMap.has(cacheKey) && (now - cacheTimestamp < this.CACHE_TTL)) {
+
+      if (
+        this.cachedResultsMap.has(cacheKey) &&
+        now - cacheTimestamp < this.CACHE_TTL
+      ) {
         console.log('Usando cache em memória para', this.folder);
         const memCache = this.cachedResultsMap.get(cacheKey);
         if (memCache && memCache.length > 0) {
@@ -201,16 +221,22 @@ export class FolderPage implements OnInit {
           return;
         }
       }
-      
-      console.log('Buscando notícias do cache de armazenamento para categoria:', this.folder);
-      
+
+      console.log(
+        'Buscando notícias do cache de armazenamento para categoria:',
+        this.folder
+      );
+
       const cachedNews = await this.storageService.getCachedNews(this.folder);
-      
+
       if (cachedNews && cachedNews.length > 0) {
         this.cachedResultsMap.set(cacheKey, cachedNews);
         this.cacheTimestamps.set(cacheKey, now);
-        
-        console.log('Notícias carregadas do storage com sucesso:', cachedNews.length);
+
+        console.log(
+          'Notícias carregadas do storage com sucesso:',
+          cachedNews.length
+        );
         this.newsList = cachedNews;
         this.isUsingCache = true;
         this.updateStatusMessage('cache');
@@ -239,7 +265,7 @@ export class FolderPage implements OnInit {
     }
 
     this.updateStatusMessage('loading');
-    
+
     this.newsApiService
       .refreshTopCountryHeadlines('us', this.folder)
       .pipe(
@@ -260,7 +286,7 @@ export class FolderPage implements OnInit {
       .subscribe((news) => {
         if (news) {
           this.newsList = news;
-          this.storageService.cacheNews(news, this.folder).catch(err => {
+          this.storageService.cacheNews(news, this.folder).catch((err) => {
             console.error('Erro ao atualizar cache após refresh:', err);
           });
         }
@@ -286,7 +312,7 @@ export class FolderPage implements OnInit {
   async toggleFavorite(news: ArticlesEntity) {
     try {
       const isCurrentlyFavorite = this.isFavorite(news);
-      
+
       if (isCurrentlyFavorite) {
         const result = await this.storageService.removeFavorite(news.url);
         if (result) {
@@ -294,7 +320,7 @@ export class FolderPage implements OnInit {
           this.showToast('Notícia removida dos favoritos');
         }
       } else {
-        news.category = this.folder; 
+        news.category = this.folder;
         const result = await this.storageService.saveFavorite(news);
         if (result) {
           this.favoriteIds.add(news.url);
@@ -310,7 +336,7 @@ export class FolderPage implements OnInit {
   private async loadFavoritesList() {
     try {
       const favorites = await this.storageService.getFavorites();
-      this.favoriteIds = new Set(favorites.map(item => item.url));
+      this.favoriteIds = new Set(favorites.map((item) => item.url));
     } catch (error) {
       console.error('Erro ao carregar favoritos:', error);
     }
@@ -325,40 +351,54 @@ export class FolderPage implements OnInit {
     await toast.present();
   }
 
-  private updateStatusMessage(status: 'loading' | 'online' | 'offline' | 'cache' | 'error' | 'refresh', errorMessage?: string) {
+  private updateStatusMessage(
+    status: 'loading' | 'online' | 'offline' | 'cache' | 'error' | 'refresh',
+    errorMessage?: string
+  ) {
     switch (status) {
       case 'loading':
-        if (this.statusMessage !== undefined) this.statusMessage = 'Carregando notícias...';
-        if (this.statusIcon !== undefined) this.statusIcon = 'hourglass-outline';
+        if (this.statusMessage !== undefined)
+          this.statusMessage = 'Carregando notícias...';
+        if (this.statusIcon !== undefined)
+          this.statusIcon = 'hourglass-outline';
         if (this.statusColor !== undefined) this.statusColor = 'primary';
         break;
       case 'online':
-        if (this.statusMessage !== undefined) this.statusMessage = 'Dados carregados da rede';
-        if (this.statusIcon !== undefined) this.statusIcon = 'cloud-done-outline';
+        if (this.statusMessage !== undefined)
+          this.statusMessage = 'Dados carregados da rede';
+        if (this.statusIcon !== undefined)
+          this.statusIcon = 'cloud-done-outline';
         if (this.statusColor !== undefined) this.statusColor = 'success';
         break;
       case 'offline':
-        if (this.statusMessage !== undefined) this.statusMessage = 'Você está offline. Mostrando dados em cache.';
-        if (this.statusIcon !== undefined) this.statusIcon = 'cloud-offline-outline';
-        if (this.statusColor !== undefined) this.statusColor = 'danger'; 
+        if (this.statusMessage !== undefined)
+          this.statusMessage = 'Você está offline. Mostrando dados em cache.';
+        if (this.statusIcon !== undefined)
+          this.statusIcon = 'cloud-offline-outline';
+        if (this.statusColor !== undefined) this.statusColor = 'danger';
         break;
       case 'cache':
-        if (this.statusMessage !== undefined) this.statusMessage = 'Dados carregados do cache local';
+        if (this.statusMessage !== undefined)
+          this.statusMessage = 'Dados carregados do cache local';
         if (this.statusIcon !== undefined) this.statusIcon = 'save-outline';
-        if (this.statusColor !== undefined) this.statusColor = 'danger'; 
+        if (this.statusColor !== undefined) this.statusColor = 'danger';
         break;
       case 'refresh':
-        if (this.statusMessage !== undefined) this.statusMessage = 'Notícias atualizadas com sucesso';
-        if (this.statusIcon !== undefined) this.statusIcon = 'refresh-circle-outline';
+        if (this.statusMessage !== undefined)
+          this.statusMessage = 'Notícias atualizadas com sucesso';
+        if (this.statusIcon !== undefined)
+          this.statusIcon = 'refresh-circle-outline';
         if (this.statusColor !== undefined) this.statusColor = 'success';
         break;
       case 'error':
-        if (this.statusMessage !== undefined) this.statusMessage = errorMessage || 'Erro ao carregar notícias';
-        if (this.statusIcon !== undefined) this.statusIcon = 'alert-circle-outline';
+        if (this.statusMessage !== undefined)
+          this.statusMessage = errorMessage || 'Erro ao carregar notícias';
+        if (this.statusIcon !== undefined)
+          this.statusIcon = 'alert-circle-outline';
         if (this.statusColor !== undefined) this.statusColor = 'danger';
         break;
     }
-    
+
     if (status !== 'offline' && status !== 'error' && status !== 'cache') {
       setTimeout(() => {
         if (this.statusMessage) {
@@ -366,5 +406,16 @@ export class FolderPage implements OnInit {
         }
       }, 5000);
     }
+  }
+
+  logout() {
+    signOut(auth)
+      .then(() => {
+        console.log('Logout realizado com sucesso!');
+        window.location.href = '/login';
+      })
+      .catch((error) => {
+        console.error('Erro ao realizar logout:', error);
+      });
   }
 }

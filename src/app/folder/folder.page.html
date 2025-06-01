@@ -8,6 +8,9 @@
       <ion-icon [name]="isOnline ? 'cloud-done' : 'cloud-offline'"></ion-icon>
       <ion-label><strong>{{ isOnline ? 'ONLINE' : 'OFFLINE' }}</strong></ion-label>
     </ion-chip>
+    <ion-button slot="end" fill="clear" (click)="logout()" title="Sair">
+    <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
+  </ion-button>
   </ion-toolbar>
 </ion-header>
 
