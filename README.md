@@ -6,6 +6,14 @@ Bem vindo ao Ionic News, o seu app favorito de notícias internacionais, com sup
 
 Este projeto foi desenvolvido como atividade prática da disciplina **Desenvolvimento Mobile de Alta Performance**, ministrada pelo professor **João Ferreira**, no curso de **Análise e Desenvolvimento de Sistemas** da **Uninassau - Embarque Digital**, 4º período (turno noite).
 
+### Alunos Responsáveis:
+- Carlos Joao dos Santos Filho - Mat. 01648355
+- Daniel Lucas Santana Ferreira - Mat. 01648098
+- Kewen Wesley Gonçalves de Santana - Mat. 01648373
+- Matheus de Oliveira Santos - Mat. 01648215
+- Matheus Marques da Silva - Mat. 01648565
+- Renan Lima da Silva Oliveira - Mat. 01648222
+
 ## 💡 Descrição do Projeto
 
 A aplicação consiste em um sistema de **notícias internacionais**, desenvolvido com foco em performance, modularidade e portabilidade. Ela permite que usuários recebam atualizações sobre notícias em tempo real, com uma interface intuitiva e adaptada para dispositivos móveis.
