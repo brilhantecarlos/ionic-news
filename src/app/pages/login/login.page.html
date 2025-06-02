@@ -4,25 +4,32 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-title size="large">Bem vindo(a)</ion-title>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-title size="large">Bem vindo(a) ao Ionic News</ion-title>
 
   <div class="form-container">
     <ion-input
+      labelPlacement="floating"
+      label="Email"
+      fill="outline"
       type="email"
       placeholder="Digite seu email"
       [(ngModel)]="email"
       required
     ></ion-input>
+    <br />
     <ion-input
+      labelPlacement="floating"
+      label="Senha"
+      fill="outline"
       type="password"
       placeholder="Digite sua senha"
       [(ngModel)]="senha"
       required
     ></ion-input>
   </div>
-
-  <ion-button expand="full" color="primary" (click)="login()"
+  <br />
+  <ion-button expand="block" size="large" shape="round" color="primary" (click)="login()"
     >Entrar</ion-button
   >
 

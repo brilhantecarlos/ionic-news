@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { IonNav } from '@ionic/angular';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from 'src/app/firebase';
 

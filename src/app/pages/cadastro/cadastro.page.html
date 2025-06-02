@@ -5,30 +5,63 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-title size="large" class="ion-text-center">Crie sua conta</ion-title>
+  <ion-title size="large">Crie sua conta</ion-title>
 
-  <ion-list>
-    <ion-item>
-      <ion-input type="text" placeholder="Nome completo" [(ngModel)]="nome" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-input type="email" placeholder="Email" [(ngModel)]="email" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-input type="password" placeholder="Senha" [(ngModel)]="senha" required></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-input type="password" placeholder="Confirme a senha" [(ngModel)]="confirmarSenha" required></ion-input>
-    </ion-item>
-
-    <ion-button expand="full" color="primary" (click)="cadastrar()">Cadastrar</ion-button>
-
-    <div *ngIf="mensagemErro" style="color: red; margin-top: 12px;">
+  <div class="form-container">
+    <ion-input
+      labelPlacement="floating"
+      label="Nome"
+      fill="outline"
+      type="text"
+      placeholder="Digite seu nome"
+      [(ngModel)]="nome"
+      required
+    ></ion-input>
+    <br />
+    <ion-input
+      labelPlacement="floating"
+      label="Email"
+      fill="outline"
+      type="email"
+      placeholder="Digite seu email"
+      [(ngModel)]="email"
+      required
+    ></ion-input>
+    <br />
+    <ion-input
+      labelPlacement="floating"
+      label="Senha"
+      fill="outline"
+      type="password"
+      placeholder="Digite sua senha"
+      [(ngModel)]="senha"
+      required
+    ></ion-input>
+    <br />
+    <ion-input
+      labelPlacement="floating"
+      label="Confirme a Senha"
+      fill="outline"
+      type="password"
+      placeholder="Confirme sua senha"
+      [(ngModel)]="confirmarSenha"
+      required
+      ></ion-input>
+  </div>
+  <br />
+  <ion-button
+    expand="block"
+    size="large"
+    shape="round"
+    color="primary"
+    (click)="cadastrar()">
+  Cadastrar
+  </ion-button>
+  <div *ngIf="mensagemErro" style="color: red; margin-top: 12px;">
       {{ mensagemErro }}
     </div>
     <ion-text class="login-link">
     Já tem conta?
     <a routerLink="/login">Entrar</a>
   </ion-text>
-  </ion-list>
 </ion-content>
