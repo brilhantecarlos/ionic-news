@@ -104,7 +104,7 @@ export class FolderPage implements OnInit {
 
   private newsRequestInProgress = false;
   private lastRequestTime = 0;
-  private readonly REQUEST_COOLDOWN = 5000; // 5 segundos entre requisições
+  private readonly REQUEST_COOLDOWN = 5000;
 
   loadNews() {
     const now = Date.now();
@@ -151,7 +151,7 @@ export class FolderPage implements OnInit {
         }),
         catchError((err) => {
           console.error('Erro ao carregar notícias:', err);
-          this.loadCachedNews(); // Tentar carregar do cache em caso de erro
+          this.loadCachedNews(); 
           return of(null);
         }),
         finalize(() => {
@@ -185,7 +185,7 @@ export class FolderPage implements OnInit {
           console.error('Erro na subscrição:', err);
           this.isLoading = false;
           this.updateStatusMessage('error', 'Erro ao carregar notícias');
-          this.loadCachedNews(); // Tentar carregar do cache em caso de erro
+          this.loadCachedNews(); 
         },
       });
   }
@@ -195,7 +195,7 @@ export class FolderPage implements OnInit {
     ArticlesEntity[]
   >();
   private cacheTimestamps: Map<string, number> = new Map<string, number>();
-  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutos em milissegundos
+  private readonly CACHE_TTL = 5 * 60 * 1000; 
 
   private async loadCachedNews() {
     if (!this.folder) return;

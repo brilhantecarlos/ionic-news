@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { Platform } from '@ionic/angular';
+import { sendLocalNotification } from './notification.util';
 
 @Injectable({
   providedIn: 'root'
@@ -128,6 +129,19 @@ export class StorageService {
       const now = new Date().getTime();
       const expirationTime = now + (expirationMinutes * 60 * 1000);
       
+      let newNewsCount = 0;
+      let lastCachedUrls: Set<string> = new Set();
+      if (this.isWeb) {
+        const cached = this.memoryCache.news.get(category) || [];
+        lastCachedUrls = new Set(cached.map(item => item.url));
+      } else {
+        const cached = await this.getCachedNews(category);
+        lastCachedUrls = new Set(cached.map(item => item.url));
+      }
+      // Detecta notícias novas
+      const newNews = news.filter(item => !lastCachedUrls.has(item.url));
+      newNewsCount = newNews.length;
+      
       if (this.isWeb) {
         const newsWithMeta = news.map(item => ({
           ...item,
@@ -150,6 +164,10 @@ export class StorageService {
           console.warn('Erro ao salvar no localStorage:', e);
         }
         
+        
+        if (newNewsCount > 0) {
+          sendLocalNotification('Novas Notícias foram acrescentadas', `${newNewsCount} novas notícias na categoria ${category}`);
+        }
         return true;
       }
       
@@ -186,6 +204,11 @@ export class StorageService {
         ];
         
         await this.db.run(insertStmt, values);
+      }
+      
+      // Notifica usuário sobre novas notícias
+      if (newNewsCount > 0) {
+        sendLocalNotification('Novas Notícias foram acrescentadas', `${newNewsCount} novas notícias na categoria ${category}`);
       }
       
       console.log(`${news.length} notícias cacheadas no SQLite para ${category}`);
