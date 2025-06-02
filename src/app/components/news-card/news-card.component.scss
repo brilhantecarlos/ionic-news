@@ -1,0 +1,31 @@
+ion-card-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  ion-card-title {
+    flex: 1;
+    margin-right: 8px;
+  }
+  ion-card-subtitle {
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+  ion-button {
+    margin-left: none;
+    order: 2;
+  }
+}
+
+ion-card-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+ion-button[fill="clear"] {
+  margin-left: 16px;
+  align-self: flex-start;
+}

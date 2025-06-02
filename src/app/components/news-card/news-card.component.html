@@ -1,11 +1,14 @@
 <ion-card href="{{news.url }}" target="_blank" rel="noopener noreferrer">
-  <ion-img *ngIf="news.urlToImage" src="{{news.urlToImage}}"/>
+  <ion-img *ngIf="news.urlToImage" src="{{news.urlToImage}}" />
   <ion-card-header>
     <ion-card-title>{{ news.title }}</ion-card-title>
-    <ion-card-subtitle>{{ news && news.source ? news.source.name : '' }}</ion-card-subtitle>
+    <ion-card-subtitle>{{ news && news.source ? news.source.name : '' }} </ion-card-subtitle>
   </ion-card-header>
 
   <ion-card-content>
-    {{ news.description }}
+    <span>{{ news.description }}</span>
+    <ion-button fill="clear" size="large" (click)="toggleFavorite($event)">
+      <ion-icon [name]="isFavorite ? 'star' : 'star-outline'" slot="icon-only"></ion-icon>
+    </ion-button>
   </ion-card-content>
-</ion-card> 
+</ion-card>

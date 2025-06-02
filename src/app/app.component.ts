@@ -18,11 +18,12 @@ export class AppComponent {
     { title: 'Tecnologia', url: '/technology', icon: 'laptop' },
     { title: 'Saúde', url: '/health', icon: 'medkit' },
     { title: 'Ciência', url: '/science', icon: 'rocket' },
+    { title: 'Favoritos', url: '/favoritos', icon: 'star' },
   ];
 
   public isLoggedIn: boolean = false;
   public isAuthPage: boolean = false;
-  
+
   constructor(public router: Router) {
 
     this.router.events.subscribe(event => {
@@ -36,5 +37,5 @@ export class AppComponent {
       this.isLoggedIn = !!user;
     });
   }
-  
+
 }

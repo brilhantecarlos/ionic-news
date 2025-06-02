@@ -1,0 +1,17 @@
+
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Favoritos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ng-container *ngIf="favoritos.length > 0; else semFavoritos">
+    <app-news-card *ngFor="let news of favoritos" [news]="news"></app-news-card>
+  </ng-container>
+  <ng-template #semFavoritos>
+    <ion-text color="medium">
+      <p style="text-align:center; margin-top: 2rem;">Nenhuma notícia favoritada.</p>
+    </ion-text>
+  </ng-template>
+</ion-content>
