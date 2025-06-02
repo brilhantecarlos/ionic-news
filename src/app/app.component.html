@@ -2,7 +2,7 @@
   <ng-container>
     <ion-split-pane contentId="main-content">
       <ion-menu contentId="main-content" type="overlay">
-        <ion-content>
+        <ion-content *ngIf="isLoggedIn && !isAuthPage">
           <ion-list id="inbox-list">
             <ion-list-header>Ionic News</ion-list-header>
             <ion-note>The Best Programmers Team - All Rights Reserved</ion-note>
