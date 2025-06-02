@@ -11,6 +11,7 @@ import { auth } from './firebase';
 })
 export class AppComponent {
   public appPages = [
+    { title: 'Favoritos', url: '/favoritos', icon: 'star' },
     { title: 'Geral', url: '/general', icon: 'newspaper' },
     { title: 'Negócios', url: '/business', icon: 'business' },
     { title: 'Esportes', url: '/sports', icon: 'football' },
@@ -18,7 +19,6 @@ export class AppComponent {
     { title: 'Tecnologia', url: '/technology', icon: 'laptop' },
     { title: 'Saúde', url: '/health', icon: 'medkit' },
     { title: 'Ciência', url: '/science', icon: 'rocket' },
-    { title: 'Favoritos', url: '/favoritos', icon: 'star' },
   ];
 
   public isLoggedIn: boolean = false;
